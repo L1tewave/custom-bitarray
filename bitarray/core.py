@@ -15,13 +15,35 @@ class BitArray:
             raise ValueError(f"Unsupported initializer type {type(initializer)}")
 
         if isinstance(initializer, str):
-            self.bits = BitArray._parse_str(initializer)
+            self.__bits = BitArray._parse_str(initializer)
         if isinstance(initializer, List):
-            self.bits = BitArray._parse_list(initializer)
+            self.__bits = BitArray._parse_list(initializer)
         if isinstance(initializer, NoneType):
-            self.bits = []
+            self.__bits = []
+
+    @property
+    def bits(self):
+        return self.__bits
 
     def implies(self, other: BitArray) -> BitArray:
+        """
+        Implements a bitwise implication
+
+        Parameters
+        ----------
+        other : BitArray
+            another array of bytes
+
+        Returns
+        -------
+        BitArray
+            implication result
+
+        Raises
+        ------
+        TypeError
+            when an invalid data type is transmitted
+        """
         if not isinstance(other, BitArray):
             raise TypeError("BitArray does not support <implication> "
                             "with all types other than BitArray")

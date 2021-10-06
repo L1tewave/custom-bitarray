@@ -50,6 +50,10 @@ class TestBitArray:
 
         assert x & y == z
 
+    def test_and_exception(self, x):
+        with pytest.raises(TypeError):
+            y = x & "something else"
+
     def test_or(self):
         x = BitArray("10101")
         y = BitArray("01100")
@@ -57,9 +61,17 @@ class TestBitArray:
 
         assert x | y == z
 
+    def test_or_exception(self, x):
+        with pytest.raises(TypeError):
+            y = x | "something else"
+
     def test_implication(self):
         x = BitArray("10101")
         y = BitArray("01100")
         z = BitArray("01110")
 
         assert x.implies(y) == z
+
+    def test_implication_exception(self, x):
+        with pytest.raises(TypeError):
+            y = x.implies("something else")
