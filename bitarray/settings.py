@@ -1,3 +1,7 @@
+"""
+Some necessary constants
+"""
+
 STR_ZERO_AND_ONE: str = "01"
 
 LIST_ZERO_AND_ONE = [0, 1]
