@@ -7,19 +7,9 @@ from __future__ import annotations
 from typing import List
 from typing import Union
 
-from bitarray.services import is_char_0_or_1, is_bool, is_int_0_or_1
-from bitarray.settings import NoneType
-
-
-# For methods documentation
-METHODS_TO_BE_DOCUMENTED = [
-    "__or__", "__and__",
-    "__invert__", "__eq__",
-    "__ne__", "__len__",
-    "_parse_str", "_parse_list",
-]
-
-__pdoc__ = {"BitArray." + method: True for method in METHODS_TO_BE_DOCUMENTED}
+from bitarray.services import is_bool
+from bitarray.services import is_char_0_or_1
+from bitarray.services import is_int_0_or_1
 
 
 class BitArray:
@@ -28,17 +18,15 @@ class BitArray:
 
     Stores bit values as a list with boolean values
     """
+    ALLOWED_TYPES = (list, str)
 
-    def __init__(self, initializer: Union[List, str, None] = None):
-        if not isinstance(initializer, (list, str, NoneType)):
-            raise ValueError(f"Unsupported initializer type {type(initializer)}")
+    def __init__(self, initializer: Union[list, str, None] = None):
+        self.__bits = []
 
-        if isinstance(initializer, str):
-            self.__bits = BitArray._parse_str(initializer)
-        if isinstance(initializer, List):
-            self.__bits = BitArray._parse_list(initializer)
-        if isinstance(initializer, NoneType):
-            self.__bits = []
+        if not initializer:
+            return
+
+        self.__bits += self._try_parse(initializer)
 
     @property
     def bits(self) -> List[bool]:
@@ -46,6 +34,33 @@ class BitArray:
         Returns the bit values
         """
         return self.__bits
+
+    def append(self, new_bits: Union[list, str]) -> None:
+        """
+        Adds values to the end of the array
+
+        Parameters
+        ----------
+        new_bits : List[int] / List[bool] / str
+            values to be added
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        TypeError
+            when an invalid data type is transmitted
+
+        Examples
+        --------
+        >>> x = BitArray("1011")
+        >>> x.append("1100")
+        >>> x
+        BitArray <11011100> object
+        """
+        self.__bits += self._try_parse(new_bits)
 
     def implies(self, other: BitArray) -> BitArray:
         """
@@ -59,7 +74,7 @@ class BitArray:
         Returns
         -------
         BitArray
-            implication result
+            new BitArray object, result of "implication (x -> y)"
 
         Raises
         ------
@@ -73,9 +88,7 @@ class BitArray:
         >>> x.implies(y)
         BitArray <1100> object
         """
-        if not isinstance(other, BitArray):
-            raise TypeError("BitArray does not support <implication> "
-                            "with all types other than BitArray")
+        self._check_support(other, "bitwise implication")
         return ~self | other
 
     def __or__(self, other: BitArray) -> BitArray:
@@ -90,7 +103,7 @@ class BitArray:
         Returns
         -------
         BitArray
-            bitwise or result
+            new BitArray object, result of "bitwise or"
 
         Raises
         ------
@@ -104,9 +117,7 @@ class BitArray:
         >>> x | y
         BitArray <1111> object
         """
-        if not isinstance(other, BitArray):
-            raise TypeError("BitArray does not support <bitwise or> "
-                            "with all types other than BitArray")
+        self._check_support(other, "bitwise or")
         return BitArray([x or y for x, y in zip(self.bits, other.bits)])
 
     def __and__(self, other: BitArray) -> BitArray:
@@ -121,7 +132,7 @@ class BitArray:
         Returns
         -------
         BitArray
-            bitwise and result
+            new BitArray object, result of "bitwise and"
 
         Raises
         ------
@@ -135,9 +146,7 @@ class BitArray:
         >>> x & y
         BitArray <1000> object
         """
-        if not isinstance(other, BitArray):
-            raise TypeError("BitArray does not support <bitwise and> "
-                            "with all types other than BitArray")
+        self._check_support(other, "bitwise and")
         return BitArray([x and y for x, y in zip(self.bits, other.bits)])
 
     def __invert__(self) -> BitArray:
@@ -147,7 +156,7 @@ class BitArray:
         Returns
         -------
         BitArray
-            bitwise not result
+            new BitArray object, result of "bitwise not"
 
         Examples
         --------
@@ -159,21 +168,21 @@ class BitArray:
 
     def __eq__(self, other: BitArray) -> bool:
         """
-        Checks the equality of two BitArrays
+        Checks for equality with another object
 
         Parameters
         ----------
-        other : BitArray
-            another array of bytes
+        other : Any
+            some object
 
         Returns
         -------
         bool
-            compare result
+            comparison result
 
         Note
         ----
-        When an invalid type is passed, it returns False
+        When an invalid type (not BitArray) is passed, it returns False
 
         Examples
         --------
@@ -184,9 +193,7 @@ class BitArray:
         >>> x == "1011"
         False
         """
-        if not isinstance(other, BitArray):
-            return False
-        if len(self) != len(other):
+        if not isinstance(other, BitArray) or len(self) != len(other):
             return False
         return self.bits == other.bits
 
@@ -211,6 +218,51 @@ class BitArray:
         4
         """
         return len(self.bits)
+
+    def _check_support(self, other: BitArray, operation: str) -> None:
+        """
+        Auxiliary function to check that bitwise and, bitwise or
+        and bitwise implication operations can be performed
+
+        Parameters
+        ----------
+        other : Any
+            some object
+
+        Raises
+        ------
+        ValueError
+            when the lengths of the BitArray objects do not match
+
+        TypeError
+            when an incorrect type is transmitted
+        """
+        if not isinstance(other, BitArray):
+            raise TypeError(f"BitArray does not support <{operation}> "
+                            "with all types other than BitArray")
+        if len(self) != len(other):
+            raise ValueError("Operands of different lengths!")
+
+    def _try_parse(self, new_bits) -> List[bool]:
+        """
+        If possible converts the argument into an array of bits
+
+        Parameters
+        ----------
+        new_bits : Any
+            some object
+
+        Raises
+        ------
+        ValueError
+            when conversion is not possible
+
+        TypeError
+            when an incorrect type is transmitted
+        """
+        self._check_type(new_bits)
+        parse = self._parse_str if type(new_bits) == str else self._parse_list
+        return parse(new_bits)
 
     @staticmethod
     def _parse_str(string: str) -> List[bool]:
@@ -246,6 +298,8 @@ class BitArray:
         """
         Checks if the transmitted list can be converted to an array of bytes
 
+        The list must contain digits: [0, 1] or boolean values: [False, True]
+
         Parameters
         ----------
         lst : List[bool], List[int]
@@ -266,8 +320,28 @@ class BitArray:
         >>> ByteArray._parse_list([1, 0, 1, 1])
         [True, False, True, True]
         """
-        if all(map(is_bool, lst)):
-            return lst
-        if all(map(is_int_0_or_1, lst)):
-            return list(map(bool, lst))
-        raise ValueError("The List must contain only digits [0, 1] or only boolean values [False, True]")
+        is_bit = lambda bit: is_bool(bit) or is_int_0_or_1(bit)
+
+        if not all(map(is_bit, lst)):
+            raise ValueError("The list must contain digits: [0, 1] or boolean values: [False, True]")
+
+        return list(map(bool, lst))
+
+    @classmethod
+    def _check_type(cls, new_bits) -> None:
+        """
+        Checks if the passed argument belongs to a valid type
+
+        Parameters
+        ----------
+        new_bits : Any
+            some object
+
+        Raises
+        ------
+        TypeError
+            when an incorrect type is transmitted
+        """
+        if isinstance(new_bits, cls.ALLOWED_TYPES):
+            return
+        raise TypeError(f"Expected one of these types {cls.ALLOWED_TYPES}, got {type(new_bits)} instead")

@@ -10,9 +10,16 @@ def x():
 
 class TestBitArray:
 
+    def test_init(self):
+        assert BitArray([True, False, 1]).bits == [True, False, True]
+
     def test_init_exception(self):
         with pytest.raises(ValueError):
             x = BitArray("12012")
+
+    def test_append(self, x: BitArray):
+        x.append("101")
+        assert x == BitArray("1011101")
 
     def test_equals_reflexive(self, x):
         assert x == x
@@ -53,6 +60,8 @@ class TestBitArray:
     def test_and_exception(self, x):
         with pytest.raises(TypeError):
             y = x & "something else"
+        with pytest.raises(ValueError):
+            y = x & BitArray()
 
     def test_or(self):
         x = BitArray("10101")
@@ -64,6 +73,8 @@ class TestBitArray:
     def test_or_exception(self, x):
         with pytest.raises(TypeError):
             y = x | "something else"
+        with pytest.raises(ValueError):
+            y = x | BitArray()
 
     def test_implication(self):
         x = BitArray("10101")
@@ -75,3 +86,5 @@ class TestBitArray:
     def test_implication_exception(self, x):
         with pytest.raises(TypeError):
             y = x.implies("something else")
+        with pytest.raises(ValueError):
+            y = x.implies(BitArray())

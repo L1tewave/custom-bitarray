@@ -41,7 +41,19 @@ version: 1.0.0
 &#34;&#34;&#34;
 __author__ = &#34;Igor Kostychakov&#34;
 
-__version__ = &#34;1.0.0&#34;</code></pre>
+__version__ = &#34;1.0.0&#34;
+
+# For methods documentation
+METHODS_TO_BE_DOCUMENTED = [
+    &#34;__or__&#34;, &#34;__and__&#34;,
+    &#34;__eq__&#34;, &#34;__len__&#34;,
+    &#34;__ne__&#34;, &#34;__invert__&#34; 
+    &#34;_parse_str&#34;, &#34;_parse_list&#34;,
+    &#34;_check_support&#34;, &#34;_check_type&#34;,
+    &#34;_try_parse&#34;,
+]
+
+__pdoc__ = {&#34;bitarray.core.BitArray.&#34; + method: True for method in METHODS_TO_BE_DOCUMENTED}</code></pre>
 </details>
 </section>
 <section>
