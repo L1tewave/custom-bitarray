@@ -55,7 +55,7 @@ class BitArray:
         if not initializer:
             return
 
-        self.__bits += self._try_parse(initializer)
+        self.__bits += self.try_parse(initializer)
 
     @property
     def bits(self) -&gt; List[bool]:
@@ -89,7 +89,7 @@ class BitArray:
         &gt;&gt;&gt; x
         BitArray &lt;11011100&gt; object
         &#34;&#34;&#34;
-        self.__bits += self._try_parse(new_bits)
+        self.__bits += self.try_parse(new_bits)
 
     def implies(self, other: BitArray) -&gt; BitArray:
         &#34;&#34;&#34;
@@ -272,7 +272,8 @@ class BitArray:
         if len(self) != len(other):
             raise ValueError(&#34;Operands of different lengths!&#34;)
 
-    def _try_parse(self, new_bits) -&gt; List[bool]:
+    @classmethod
+    def try_parse(cls, new_bits) -&gt; List[bool]:
         &#34;&#34;&#34;
         If possible converts the argument into an array of bits
 
@@ -289,12 +290,20 @@ class BitArray:
         TypeError
             when an incorrect type is transmitted
         &#34;&#34;&#34;
-        self._check_type(new_bits)
-        parse = self._parse_str if type(new_bits) == str else self._parse_list
+        PARSERS = {
+            str: cls.parse_str,
+            list: cls.parse_list,
+        }
+        required_type = type(new_bits)
+        parse = PARSERS.get(required_type, None)
+
+        if not parse:
+            raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {required_type} instead&#34;)
+
         return parse(new_bits)
 
     @staticmethod
-    def _parse_str(string: str) -&gt; List[bool]:
+    def parse_str(string: str) -&gt; List[bool]:
         &#34;&#34;&#34;
         Checks if the transmitted string can be converted to an array of bytes
 
@@ -315,15 +324,15 @@ class BitArray:
 
         Examples
         --------
-        &gt;&gt;&gt; ByteArray._parse_str(&#34;1011&#34;)
+        &gt;&gt;&gt; ByteArray.parse_str(&#34;1011&#34;)
         [True, False, True, True]
         &#34;&#34;&#34;
         if not all(map(is_char_0_or_1, string)):
             raise ValueError(&#34;Initializer must consist of 0 and 1 only&#34;)
         return list(map(bool, map(int, string)))
 
-    @classmethod
-    def _parse_list(cls, lst: list) -&gt; List[bool]:
+    @staticmethod
+    def parse_list(lst: list) -&gt; List[bool]:
         &#34;&#34;&#34;
         Checks if the transmitted list can be converted to an array of bytes
 
@@ -346,7 +355,7 @@ class BitArray:
 
         Examples
         --------
-        &gt;&gt;&gt; ByteArray._parse_list([1, 0, 1, 1])
+        &gt;&gt;&gt; ByteArray.parse_list([1, 0, 1, 1])
         [True, False, True, True]
         &#34;&#34;&#34;
         is_bit = lambda bit: is_bool(bit) or is_int_0_or_1(bit)
@@ -354,26 +363,7 @@ class BitArray:
         if not all(map(is_bit, lst)):
             raise ValueError(&#34;The list must contain digits: [0, 1] or boolean values: [False, True]&#34;)
 
-        return list(map(bool, lst))
-
-    @classmethod
-    def _check_type(cls, new_bits) -&gt; None:
-        &#34;&#34;&#34;
-        Checks if the passed argument belongs to a valid type
-
-        Parameters
-        ----------
-        new_bits : Any
-            some object
-
-        Raises
-        ------
-        TypeError
-            when an incorrect type is transmitted
-        &#34;&#34;&#34;
-        if isinstance(new_bits, cls.ALLOWED_TYPES):
-            return
-        raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {type(new_bits)} instead&#34;)</code></pre>
+        return list(map(bool, lst))</code></pre>
 </details>
 </section>
 <section>
@@ -410,7 +400,7 @@ class BitArray:
         if not initializer:
             return
 
-        self.__bits += self._try_parse(initializer)
+        self.__bits += self.try_parse(initializer)
 
     @property
     def bits(self) -&gt; List[bool]:
@@ -444,7 +434,7 @@ class BitArray:
         &gt;&gt;&gt; x
         BitArray &lt;11011100&gt; object
         &#34;&#34;&#34;
-        self.__bits += self._try_parse(new_bits)
+        self.__bits += self.try_parse(new_bits)
 
     def implies(self, other: BitArray) -&gt; BitArray:
         &#34;&#34;&#34;
@@ -627,7 +617,8 @@ class BitArray:
         if len(self) != len(other):
             raise ValueError(&#34;Operands of different lengths!&#34;)
 
-    def _try_parse(self, new_bits) -&gt; List[bool]:
+    @classmethod
+    def try_parse(cls, new_bits) -&gt; List[bool]:
         &#34;&#34;&#34;
         If possible converts the argument into an array of bits
 
@@ -644,12 +635,20 @@ class BitArray:
         TypeError
             when an incorrect type is transmitted
         &#34;&#34;&#34;
-        self._check_type(new_bits)
-        parse = self._parse_str if type(new_bits) == str else self._parse_list
+        PARSERS = {
+            str: cls.parse_str,
+            list: cls.parse_list,
+        }
+        required_type = type(new_bits)
+        parse = PARSERS.get(required_type, None)
+
+        if not parse:
+            raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {required_type} instead&#34;)
+
         return parse(new_bits)
 
     @staticmethod
-    def _parse_str(string: str) -&gt; List[bool]:
+    def parse_str(string: str) -&gt; List[bool]:
         &#34;&#34;&#34;
         Checks if the transmitted string can be converted to an array of bytes
 
@@ -670,15 +669,15 @@ class BitArray:
 
         Examples
         --------
-        &gt;&gt;&gt; ByteArray._parse_str(&#34;1011&#34;)
+        &gt;&gt;&gt; ByteArray.parse_str(&#34;1011&#34;)
         [True, False, True, True]
         &#34;&#34;&#34;
         if not all(map(is_char_0_or_1, string)):
             raise ValueError(&#34;Initializer must consist of 0 and 1 only&#34;)
         return list(map(bool, map(int, string)))
 
-    @classmethod
-    def _parse_list(cls, lst: list) -&gt; List[bool]:
+    @staticmethod
+    def parse_list(lst: list) -&gt; List[bool]:
         &#34;&#34;&#34;
         Checks if the transmitted list can be converted to an array of bytes
 
@@ -701,7 +700,7 @@ class BitArray:
 
         Examples
         --------
-        &gt;&gt;&gt; ByteArray._parse_list([1, 0, 1, 1])
+        &gt;&gt;&gt; ByteArray.parse_list([1, 0, 1, 1])
         [True, False, True, True]
         &#34;&#34;&#34;
         is_bit = lambda bit: is_bool(bit) or is_int_0_or_1(bit)
@@ -709,26 +708,7 @@ class BitArray:
         if not all(map(is_bit, lst)):
             raise ValueError(&#34;The list must contain digits: [0, 1] or boolean values: [False, True]&#34;)
 
-        return list(map(bool, lst))
-
-    @classmethod
-    def _check_type(cls, new_bits) -&gt; None:
-        &#34;&#34;&#34;
-        Checks if the passed argument belongs to a valid type
-
-        Parameters
-        ----------
-        new_bits : Any
-            some object
-
-        Raises
-        ------
-        TypeError
-            when an incorrect type is transmitted
-        &#34;&#34;&#34;
-        if isinstance(new_bits, cls.ALLOWED_TYPES):
-            return
-        raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {type(new_bits)} instead&#34;)</code></pre>
+        return list(map(bool, lst))</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -739,47 +719,8 @@ class BitArray:
 </dl>
 <h3>Static methods</h3>
 <dl>
-<dt id="bitarray.core.BitArray._check_type"><code class="name flex">
-<span>def <span class="ident">_check_type</span></span>(<span>new_bits) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Checks if the passed argument belongs to a valid type</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>new_bits</code></strong> :&ensp;<code>Any</code></dt>
-<dd>some object</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>TypeError</code></dt>
-<dd>when an incorrect type is transmitted</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def _check_type(cls, new_bits) -&gt; None:
-    &#34;&#34;&#34;
-    Checks if the passed argument belongs to a valid type
-
-    Parameters
-    ----------
-    new_bits : Any
-        some object
-
-    Raises
-    ------
-    TypeError
-        when an incorrect type is transmitted
-    &#34;&#34;&#34;
-    if isinstance(new_bits, cls.ALLOWED_TYPES):
-        return
-    raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {type(new_bits)} instead&#34;)</code></pre>
-</details>
-</dd>
-<dt id="bitarray.core.BitArray._parse_list"><code class="name flex">
-<span>def <span class="ident">_parse_list</span></span>(<span>lst: list) ‑> List[bool]</span>
+<dt id="bitarray.core.BitArray.parse_list"><code class="name flex">
+<span>def <span class="ident">parse_list</span></span>(<span>lst: list) ‑> List[bool]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Checks if the transmitted list can be converted to an array of bytes</p>
@@ -800,15 +741,15 @@ def _check_type(cls, new_bits) -&gt; None:
 <dd>when conversion is not possible</dd>
 </dl>
 <h2 id="examples">Examples</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; ByteArray._parse_list([1, 0, 1, 1])
+<pre><code class="language-python-repl">&gt;&gt;&gt; ByteArray.parse_list([1, 0, 1, 1])
 [True, False, True, True]
 </code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@classmethod
-def _parse_list(cls, lst: list) -&gt; List[bool]:
+<pre><code class="python">@staticmethod
+def parse_list(lst: list) -&gt; List[bool]:
     &#34;&#34;&#34;
     Checks if the transmitted list can be converted to an array of bytes
 
@@ -831,7 +772,7 @@ def _parse_list(cls, lst: list) -&gt; List[bool]:
 
     Examples
     --------
-    &gt;&gt;&gt; ByteArray._parse_list([1, 0, 1, 1])
+    &gt;&gt;&gt; ByteArray.parse_list([1, 0, 1, 1])
     [True, False, True, True]
     &#34;&#34;&#34;
     is_bit = lambda bit: is_bool(bit) or is_int_0_or_1(bit)
@@ -840,6 +781,116 @@ def _parse_list(cls, lst: list) -&gt; List[bool]:
         raise ValueError(&#34;The list must contain digits: [0, 1] or boolean values: [False, True]&#34;)
 
     return list(map(bool, lst))</code></pre>
+</details>
+</dd>
+<dt id="bitarray.core.BitArray.parse_str"><code class="name flex">
+<span>def <span class="ident">parse_str</span></span>(<span>string: str) ‑> List[bool]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Checks if the transmitted string can be converted to an array of bytes</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>string</code></strong> :&ensp;<code>str</code></dt>
+<dd>string to check</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[bool]</code></dt>
+<dd>byte array</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>when conversion is not possible</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; ByteArray.parse_str(&quot;1011&quot;)
+[True, False, True, True]
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_str(string: str) -&gt; List[bool]:
+    &#34;&#34;&#34;
+    Checks if the transmitted string can be converted to an array of bytes
+
+    Parameters
+    ----------
+    string : str
+        string to check
+
+    Returns
+    -------
+    List[bool]
+        byte array
+
+    Raises
+    ------
+    ValueError
+        when conversion is not possible
+
+    Examples
+    --------
+    &gt;&gt;&gt; ByteArray.parse_str(&#34;1011&#34;)
+    [True, False, True, True]
+    &#34;&#34;&#34;
+    if not all(map(is_char_0_or_1, string)):
+        raise ValueError(&#34;Initializer must consist of 0 and 1 only&#34;)
+    return list(map(bool, map(int, string)))</code></pre>
+</details>
+</dd>
+<dt id="bitarray.core.BitArray.try_parse"><code class="name flex">
+<span>def <span class="ident">try_parse</span></span>(<span>new_bits) ‑> List[bool]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>If possible converts the argument into an array of bits</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>new_bits</code></strong> :&ensp;<code>Any</code></dt>
+<dd>some object</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>when conversion is not possible</dd>
+<dt><code>TypeError</code></dt>
+<dd>when an incorrect type is transmitted</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def try_parse(cls, new_bits) -&gt; List[bool]:
+    &#34;&#34;&#34;
+    If possible converts the argument into an array of bits
+
+    Parameters
+    ----------
+    new_bits : Any
+        some object
+
+    Raises
+    ------
+    ValueError
+        when conversion is not possible
+
+    TypeError
+        when an incorrect type is transmitted
+    &#34;&#34;&#34;
+    PARSERS = {
+        str: cls.parse_str,
+        list: cls.parse_list,
+    }
+    required_type = type(new_bits)
+    parse = PARSERS.get(required_type, None)
+
+    if not parse:
+        raise TypeError(f&#34;Expected one of these types {cls.ALLOWED_TYPES}, got {required_type} instead&#34;)
+
+    return parse(new_bits)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1134,49 +1185,6 @@ and bitwise implication operations can be performed</p>
         raise ValueError(&#34;Operands of different lengths!&#34;)</code></pre>
 </details>
 </dd>
-<dt id="bitarray.core.BitArray._try_parse"><code class="name flex">
-<span>def <span class="ident">_try_parse</span></span>(<span>self, new_bits) ‑> List[bool]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>If possible converts the argument into an array of bits</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>new_bits</code></strong> :&ensp;<code>Any</code></dt>
-<dd>some object</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>ValueError</code></dt>
-<dd>when conversion is not possible</dd>
-<dt><code>TypeError</code></dt>
-<dd>when an incorrect type is transmitted</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def _try_parse(self, new_bits) -&gt; List[bool]:
-    &#34;&#34;&#34;
-    If possible converts the argument into an array of bits
-
-    Parameters
-    ----------
-    new_bits : Any
-        some object
-
-    Raises
-    ------
-    ValueError
-        when conversion is not possible
-
-    TypeError
-        when an incorrect type is transmitted
-    &#34;&#34;&#34;
-    self._check_type(new_bits)
-    parse = self._parse_str if type(new_bits) == str else self._parse_list
-    return parse(new_bits)</code></pre>
-</details>
-</dd>
 <dt id="bitarray.core.BitArray.append"><code class="name flex">
 <span>def <span class="ident">append</span></span>(<span>self, new_bits: Union[list, str]) ‑> None</span>
 </code></dt>
@@ -1232,7 +1240,7 @@ BitArray &lt;11011100&gt; object
     &gt;&gt;&gt; x
     BitArray &lt;11011100&gt; object
     &#34;&#34;&#34;
-    self.__bits += self._try_parse(new_bits)</code></pre>
+    self.__bits += self.try_parse(new_bits)</code></pre>
 </details>
 </dd>
 <dt id="bitarray.core.BitArray.implies"><code class="name flex">
@@ -1323,12 +1331,12 @@ BitArray &lt;1100&gt; object
 <li><code><a title="bitarray.core.BitArray.__ne__" href="#bitarray.core.BitArray.__ne__">__ne__</a></code></li>
 <li><code><a title="bitarray.core.BitArray.__or__" href="#bitarray.core.BitArray.__or__">__or__</a></code></li>
 <li><code><a title="bitarray.core.BitArray._check_support" href="#bitarray.core.BitArray._check_support">_check_support</a></code></li>
-<li><code><a title="bitarray.core.BitArray._check_type" href="#bitarray.core.BitArray._check_type">_check_type</a></code></li>
-<li><code><a title="bitarray.core.BitArray._parse_list" href="#bitarray.core.BitArray._parse_list">_parse_list</a></code></li>
-<li><code><a title="bitarray.core.BitArray._try_parse" href="#bitarray.core.BitArray._try_parse">_try_parse</a></code></li>
 <li><code><a title="bitarray.core.BitArray.append" href="#bitarray.core.BitArray.append">append</a></code></li>
 <li><code><a title="bitarray.core.BitArray.bits" href="#bitarray.core.BitArray.bits">bits</a></code></li>
 <li><code><a title="bitarray.core.BitArray.implies" href="#bitarray.core.BitArray.implies">implies</a></code></li>
+<li><code><a title="bitarray.core.BitArray.parse_list" href="#bitarray.core.BitArray.parse_list">parse_list</a></code></li>
+<li><code><a title="bitarray.core.BitArray.parse_str" href="#bitarray.core.BitArray.parse_str">parse_str</a></code></li>
+<li><code><a title="bitarray.core.BitArray.try_parse" href="#bitarray.core.BitArray.try_parse">try_parse</a></code></li>
 </ul>
 </li>
 </ul>

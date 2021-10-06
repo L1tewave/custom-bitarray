@@ -4,11 +4,11 @@ implementations of bitwise and, bitwise or, bitwise negation and bitwise implica
 
 author: Igor Kostychakov
 
-version: 1.1.0
+version: 1.1.1
 """
 __author__ = "Igor Kostychakov"
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 # For methods documentation
 METHODS_TO_BE_DOCUMENTED = [

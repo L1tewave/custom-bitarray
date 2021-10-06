@@ -26,7 +26,7 @@ class BitArray:
         if not initializer:
             return
 
-        self.__bits += self._try_parse(initializer)
+        self.__bits += self.try_parse(initializer)
 
     @property
     def bits(self) -> List[bool]:
@@ -60,7 +60,7 @@ class BitArray:
         >>> x
         BitArray <11011100> object
         """
-        self.__bits += self._try_parse(new_bits)
+        self.__bits += self.try_parse(new_bits)
 
     def implies(self, other: BitArray) -> BitArray:
         """
@@ -243,7 +243,8 @@ class BitArray:
         if len(self) != len(other):
             raise ValueError("Operands of different lengths!")
 
-    def _try_parse(self, new_bits) -> List[bool]:
+    @classmethod
+    def try_parse(cls, new_bits) -> List[bool]:
         """
         If possible converts the argument into an array of bits
 
@@ -260,12 +261,20 @@ class BitArray:
         TypeError
             when an incorrect type is transmitted
         """
-        self._check_type(new_bits)
-        parse = self._parse_str if type(new_bits) == str else self._parse_list
+        PARSERS = {
+            str: cls.parse_str,
+            list: cls.parse_list,
+        }
+        required_type = type(new_bits)
+        parse = PARSERS.get(required_type, None)
+
+        if not parse:
+            raise TypeError(f"Expected one of these types {cls.ALLOWED_TYPES}, got {required_type} instead")
+
         return parse(new_bits)
 
     @staticmethod
-    def _parse_str(string: str) -> List[bool]:
+    def parse_str(string: str) -> List[bool]:
         """
         Checks if the transmitted string can be converted to an array of bytes
 
@@ -286,15 +295,15 @@ class BitArray:
 
         Examples
         --------
-        >>> ByteArray._parse_str("1011")
+        >>> ByteArray.parse_str("1011")
         [True, False, True, True]
         """
         if not all(map(is_char_0_or_1, string)):
             raise ValueError("Initializer must consist of 0 and 1 only")
         return list(map(bool, map(int, string)))
 
-    @classmethod
-    def _parse_list(cls, lst: list) -> List[bool]:
+    @staticmethod
+    def parse_list(lst: list) -> List[bool]:
         """
         Checks if the transmitted list can be converted to an array of bytes
 
@@ -317,7 +326,7 @@ class BitArray:
 
         Examples
         --------
-        >>> ByteArray._parse_list([1, 0, 1, 1])
+        >>> ByteArray.parse_list([1, 0, 1, 1])
         [True, False, True, True]
         """
         is_bit = lambda bit: is_bool(bit) or is_int_0_or_1(bit)
@@ -326,22 +335,3 @@ class BitArray:
             raise ValueError("The list must contain digits: [0, 1] or boolean values: [False, True]")
 
         return list(map(bool, lst))
-
-    @classmethod
-    def _check_type(cls, new_bits) -> None:
-        """
-        Checks if the passed argument belongs to a valid type
-
-        Parameters
-        ----------
-        new_bits : Any
-            some object
-
-        Raises
-        ------
-        TypeError
-            when an incorrect type is transmitted
-        """
-        if isinstance(new_bits, cls.ALLOWED_TYPES):
-            return
-        raise TypeError(f"Expected one of these types {cls.ALLOWED_TYPES}, got {type(new_bits)} instead")
