@@ -148,6 +148,9 @@ class TestBitArray:
     def test_execute_unsupported_operation(self):
         assert BitArray.execute("10 ) 10") is None
 
+    def test_execute_different_length_operands(self):
+        assert BitArray.execute("10 = 101") is None
+
     def test_execute_whitespaces(self):
         x = BitArray.execute(" 1011   |   1101   ")
         assert x == BitArray("1111")

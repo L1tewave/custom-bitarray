@@ -1,6 +1,8 @@
 .coverage
+launch guide.txt
 venv/
 .idea/
 __pycache__
 .pytest_cache
 *.zip
+*.docx

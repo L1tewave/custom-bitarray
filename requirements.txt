@@ -1,6 +1,7 @@
 atomicwrites==1.4.0
 attrs==21.2.0
 colorama==0.4.4
+coverage==6.1.1
 iniconfig==1.1.1
 Mako==1.1.5
 Markdown==3.3.4
@@ -11,4 +12,6 @@ pluggy==1.0.0
 py==1.10.0
 pyparsing==2.4.7
 pytest==6.2.5
+pytest-cov==3.0.0
 toml==0.10.2
+tomli==1.2.2
