@@ -4,7 +4,6 @@ Class implementation
 """
 from __future__ import annotations
 
-import operator
 import re
 from typing import List
 from typing import Optional
@@ -415,7 +414,7 @@ class BitArray:
 
         expr = expr.replace(" ", "")
 
-        pattern = re.compile("(?P<x> ~?[01]*) (?P<op> [&=|]|->) (?P<y> ~?[01]*)", re.VERBOSE)
+        pattern = re.compile("(?P<x_bits> ~?[01]*) (?P<op> [&=|]|->) (?P<y_bits> ~?[01]*)", re.VERBOSE)
         matcher = pattern.fullmatch(expr)
 
         if not matcher:
@@ -423,20 +422,18 @@ class BitArray:
 
         groups = matcher.groupdict()
 
-        x_bits = groups["x"]
-        op = groups["op"]
-        y_bits = groups["y"]
-
-        x = to_bitarray(x_bits)
-        y = to_bitarray(y_bits)
+        x = to_bitarray(groups["x_bits"])
+        y = to_bitarray(groups["y_bits"])
 
         if len(x) != len(y):
             return
 
+        op = groups["op"]
+
         if op == "&":
-            return operator.and_(x, y)
+            return x & y
         if op == "|":
-            return operator.or_(x, y)
+            return x | y
         if op == "->":
             return x.implies(y)
         return x.equals(y)
