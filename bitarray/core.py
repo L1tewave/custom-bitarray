@@ -4,7 +4,9 @@ Class implementation
 """
 from __future__ import annotations
 
+import re
 from typing import List
+from typing import Optional
 from typing import Union
 
 from bitarray.services import is_bool
@@ -81,6 +83,9 @@ class BitArray:
         TypeError
             when an invalid data type is transmitted
 
+        ValueError
+            when an object of mismatched length is transmitted
+
         Examples
         --------
         >>> x = BitArray("1011")
@@ -90,6 +95,38 @@ class BitArray:
         """
         self._check_support(other, "bitwise implication")
         return ~self | other
+
+    def equals(self, other: BitArray) -> BitArray:
+        """
+        Implements a bitwise equivalence
+
+        Parameters
+        ----------
+        other : BitArray
+            another array of bytes
+
+        Returns
+        -------
+        BitArray
+            new BitArray object, result of "equivalence (x = y)"
+
+        Raises
+        ------
+        TypeError
+            when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
+
+        Examples
+        --------
+        >>> x = BitArray("1011")
+        >>> y = BitArray("1100")
+        >>> x.equals(y)
+        BitArray <1000> object
+        """
+        self._check_support(other, "bitwise equivalence")
+        return BitArray([x is y for x, y in zip(self.bits, other.bits)])
 
     def __or__(self, other: BitArray) -> BitArray:
         """
@@ -109,6 +146,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -138,6 +178,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -335,3 +378,53 @@ class BitArray:
             raise ValueError("The list must contain digits: [0, 1] or boolean values: [False, True]")
 
         return list(map(bool, lst))
+
+    @staticmethod
+    def execute(expr: str) -> Optional[BitArray]:
+        """
+        Calculate the result of the expression and return the BitArray object
+
+        Parameters
+        ----------
+        expr : str
+            An expression with two operands of the form '<bitarray1> <op> <bitarray2>'.
+            Op: & - and, | - or, > - implication, = - equivalence.
+
+        Returns
+        -------
+        BitArray | None
+            result of expression or None, if something went wrong
+
+        Examples
+        --------
+        >>> BitArray.execute("!10101 > 10111")
+        BitArray <11001> object
+        """
+        if not isinstance(expr, str):
+            return
+        expr = expr.replace(" ", "")
+
+        pattern = re.compile(r"(?P<x> !?[01]*) (?P<op> [&=>|]?) (?P<y> !?[01]*)", re.VERBOSE)
+
+        groups = pattern.fullmatch(expr).groupdict()
+
+        if not groups:
+            return
+
+        x_bits = groups["x"]
+        op = groups["op"]
+        y_bits = groups["y"]
+
+        x = BitArray(x_bits) if not x_bits.startswith("!") else ~BitArray(x_bits[1:])
+        y = BitArray(y_bits) if not y_bits.startswith("!") else ~BitArray(y_bits[1:])
+
+        if len(x) != len(y):
+            raise ValueError("Cannot perform operation on arrays of different lengths!")
+
+        if op == "&":
+            return x.__and__(y)
+        if op == "|":
+            return x.__or__(y)
+        if op == ">":
+            return x.implies(y)
+        return x.equals(y)

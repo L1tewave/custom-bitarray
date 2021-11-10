@@ -1,7 +1,7 @@
 import pytest
 
 from bitarray.core import BitArray
-
+from bitarray.services import is_char_0_or_1
 
 @pytest.fixture
 def x():
@@ -14,8 +14,16 @@ class TestBitArray:
         assert BitArray([True, False, 1]).bits == [True, False, True]
 
     def test_init_exception(self):
+        with pytest.raises(TypeError):
+            dictionary = dict(
+                zero=False,
+                one=True,
+            )
+            x = BitArray(dictionary.values())
         with pytest.raises(ValueError):
             x = BitArray("12012")
+        with pytest.raises(ValueError):
+            x = BitArray([1, 2, 0, 1, 2])
 
     def test_append(self, x: BitArray):
         x.append("101")
@@ -88,3 +96,15 @@ class TestBitArray:
             y = x.implies("something else")
         with pytest.raises(ValueError):
             y = x.implies(BitArray())
+
+    def test_representation(self, x):
+        x = BitArray([True] * 10)
+        assert repr(x) == f"BitArray <{str(1) * 10}> object"
+
+    def test_evaluate(self):
+        print(BitArray.execute("!10101 > 10111"))
+        assert 1 == 1
+
+def test_single_character_exception():
+    with pytest.raises(ValueError):
+        is_char_0_or_1("not a single character")
