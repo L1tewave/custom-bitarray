@@ -4,6 +4,7 @@ Class implementation
 """
 from __future__ import annotations
 
+import operator
 import re
 from typing import List
 from typing import Optional
@@ -382,13 +383,16 @@ class BitArray:
     @staticmethod
     def execute(expr: str) -> Optional[BitArray]:
         """
-        Calculate the result of the expression and return the BitArray object
+        Calculate the result of the expression
 
         Parameters
         ----------
         expr : str
-            An expression with two operands of the form '<bitarray1> <op> <bitarray2>'.
-            Op: & - and, | - or, > - implication, = - equivalence.
+            An expression with two operands of the form: arg1 op arg2
+
+            Op: '&' for bitwise and, '|' - or, '->'  - implication, '=' - equivalence
+
+            Use '~' to invert the operand
 
         Returns
         -------
@@ -397,34 +401,39 @@ class BitArray:
 
         Examples
         --------
-        >>> BitArray.execute("!10101 > 10111")
+        >>> BitArray.execute("~10101 -> 10111")
         BitArray <11001> object
         """
         if not isinstance(expr, str):
             return
+        # Check empty string
+        if not expr:
+            return
+
         expr = expr.replace(" ", "")
 
-        pattern = re.compile(r"(?P<x> !?[01]*) (?P<op> [&=>|]?) (?P<y> !?[01]*)", re.VERBOSE)
+        pattern = re.compile("(?P<x> ~?[01]*) (?P<op> [&=|]|->) (?P<y> ~?[01]*)", re.VERBOSE)
+        matcher = pattern.fullmatch(expr)
 
-        groups = pattern.fullmatch(expr).groupdict()
-
-        if not groups:
+        if not matcher:
             return
+
+        groups = matcher.groupdict()
 
         x_bits = groups["x"]
         op = groups["op"]
         y_bits = groups["y"]
 
-        x = BitArray(x_bits) if not x_bits.startswith("!") else ~BitArray(x_bits[1:])
-        y = BitArray(y_bits) if not y_bits.startswith("!") else ~BitArray(y_bits[1:])
+        x = BitArray(x_bits) if not x_bits.startswith("~") else ~BitArray(x_bits[1:])
+        y = BitArray(y_bits) if not y_bits.startswith("~") else ~BitArray(y_bits[1:])
 
         if len(x) != len(y):
-            raise ValueError("Cannot perform operation on arrays of different lengths!")
+            return
 
         if op == "&":
-            return x.__and__(y)
+            return operator.and_(x, y)
         if op == "|":
-            return x.__or__(y)
-        if op == ">":
+            return operator.or_(x, y)
+        if op == "->":
             return x.implies(y)
         return x.equals(y)

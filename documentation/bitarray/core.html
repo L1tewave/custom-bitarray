@@ -33,7 +33,10 @@ Class implementation
 &#34;&#34;&#34;
 from __future__ import annotations
 
+import operator
+import re
 from typing import List
+from typing import Optional
 from typing import Union
 
 from bitarray.services import is_bool
@@ -110,6 +113,9 @@ class BitArray:
         TypeError
             when an invalid data type is transmitted
 
+        ValueError
+            when an object of mismatched length is transmitted
+
         Examples
         --------
         &gt;&gt;&gt; x = BitArray(&#34;1011&#34;)
@@ -119,6 +125,38 @@ class BitArray:
         &#34;&#34;&#34;
         self._check_support(other, &#34;bitwise implication&#34;)
         return ~self | other
+
+    def equals(self, other: BitArray) -&gt; BitArray:
+        &#34;&#34;&#34;
+        Implements a bitwise equivalence
+
+        Parameters
+        ----------
+        other : BitArray
+            another array of bytes
+
+        Returns
+        -------
+        BitArray
+            new BitArray object, result of &#34;equivalence (x = y)&#34;
+
+        Raises
+        ------
+        TypeError
+            when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
+
+        Examples
+        --------
+        &gt;&gt;&gt; x = BitArray(&#34;1011&#34;)
+        &gt;&gt;&gt; y = BitArray(&#34;1100&#34;)
+        &gt;&gt;&gt; x.equals(y)
+        BitArray &lt;1000&gt; object
+        &#34;&#34;&#34;
+        self._check_support(other, &#34;bitwise equivalence&#34;)
+        return BitArray([x is y for x, y in zip(self.bits, other.bits)])
 
     def __or__(self, other: BitArray) -&gt; BitArray:
         &#34;&#34;&#34;
@@ -138,6 +176,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -167,6 +208,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -363,7 +407,65 @@ class BitArray:
         if not all(map(is_bit, lst)):
             raise ValueError(&#34;The list must contain digits: [0, 1] or boolean values: [False, True]&#34;)
 
-        return list(map(bool, lst))</code></pre>
+        return list(map(bool, lst))
+
+    @staticmethod
+    def execute(expr: str) -&gt; Optional[BitArray]:
+        &#34;&#34;&#34;
+        Calculate the result of the expression
+
+        Parameters
+        ----------
+        expr : str
+            An expression with two operands of the form: arg1 op arg2
+
+            Op: &#39;&amp;&#39; for bitwise and, &#39;|&#39; - or, &#39;-&gt;&#39;  - implication, &#39;=&#39; - equivalence
+
+            Use &#39;~&#39; to invert the operand
+
+        Returns
+        -------
+        BitArray | None
+            result of expression or None, if something went wrong
+
+        Examples
+        --------
+        &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
+        BitArray &lt;11001&gt; object
+        &#34;&#34;&#34;
+        if not isinstance(expr, str):
+            return
+        # Check empty string
+        if not expr:
+            return
+
+        expr = expr.replace(&#34; &#34;, &#34;&#34;)
+
+        pattern = re.compile(&#34;(?P&lt;x&gt; ~?[01]*) (?P&lt;op&gt; [&amp;=|]|-&gt;) (?P&lt;y&gt; ~?[01]*)&#34;, re.VERBOSE)
+        matcher = pattern.fullmatch(expr)
+
+        if not matcher:
+            return
+
+        groups = matcher.groupdict()
+
+        x_bits = groups[&#34;x&#34;]
+        op = groups[&#34;op&#34;]
+        y_bits = groups[&#34;y&#34;]
+
+        x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
+        y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+
+        if len(x) != len(y):
+            return
+
+        if op == &#34;&amp;&#34;:
+            return operator.and_(x, y)
+        if op == &#34;|&#34;:
+            return operator.or_(x, y)
+        if op == &#34;-&gt;&#34;:
+            return x.implies(y)
+        return x.equals(y)</code></pre>
 </details>
 </section>
 <section>
@@ -455,6 +557,9 @@ class BitArray:
         TypeError
             when an invalid data type is transmitted
 
+        ValueError
+            when an object of mismatched length is transmitted
+
         Examples
         --------
         &gt;&gt;&gt; x = BitArray(&#34;1011&#34;)
@@ -464,6 +569,38 @@ class BitArray:
         &#34;&#34;&#34;
         self._check_support(other, &#34;bitwise implication&#34;)
         return ~self | other
+
+    def equals(self, other: BitArray) -&gt; BitArray:
+        &#34;&#34;&#34;
+        Implements a bitwise equivalence
+
+        Parameters
+        ----------
+        other : BitArray
+            another array of bytes
+
+        Returns
+        -------
+        BitArray
+            new BitArray object, result of &#34;equivalence (x = y)&#34;
+
+        Raises
+        ------
+        TypeError
+            when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
+
+        Examples
+        --------
+        &gt;&gt;&gt; x = BitArray(&#34;1011&#34;)
+        &gt;&gt;&gt; y = BitArray(&#34;1100&#34;)
+        &gt;&gt;&gt; x.equals(y)
+        BitArray &lt;1000&gt; object
+        &#34;&#34;&#34;
+        self._check_support(other, &#34;bitwise equivalence&#34;)
+        return BitArray([x is y for x, y in zip(self.bits, other.bits)])
 
     def __or__(self, other: BitArray) -&gt; BitArray:
         &#34;&#34;&#34;
@@ -483,6 +620,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -512,6 +652,9 @@ class BitArray:
         ------
         TypeError
             when an invalid data type is transmitted
+
+        ValueError
+            when an object of mismatched length is transmitted
 
         Examples
         --------
@@ -708,7 +851,65 @@ class BitArray:
         if not all(map(is_bit, lst)):
             raise ValueError(&#34;The list must contain digits: [0, 1] or boolean values: [False, True]&#34;)
 
-        return list(map(bool, lst))</code></pre>
+        return list(map(bool, lst))
+
+    @staticmethod
+    def execute(expr: str) -&gt; Optional[BitArray]:
+        &#34;&#34;&#34;
+        Calculate the result of the expression
+
+        Parameters
+        ----------
+        expr : str
+            An expression with two operands of the form: arg1 op arg2
+
+            Op: &#39;&amp;&#39; for bitwise and, &#39;|&#39; - or, &#39;-&gt;&#39;  - implication, &#39;=&#39; - equivalence
+
+            Use &#39;~&#39; to invert the operand
+
+        Returns
+        -------
+        BitArray | None
+            result of expression or None, if something went wrong
+
+        Examples
+        --------
+        &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
+        BitArray &lt;11001&gt; object
+        &#34;&#34;&#34;
+        if not isinstance(expr, str):
+            return
+        # Check empty string
+        if not expr:
+            return
+
+        expr = expr.replace(&#34; &#34;, &#34;&#34;)
+
+        pattern = re.compile(&#34;(?P&lt;x&gt; ~?[01]*) (?P&lt;op&gt; [&amp;=|]|-&gt;) (?P&lt;y&gt; ~?[01]*)&#34;, re.VERBOSE)
+        matcher = pattern.fullmatch(expr)
+
+        if not matcher:
+            return
+
+        groups = matcher.groupdict()
+
+        x_bits = groups[&#34;x&#34;]
+        op = groups[&#34;op&#34;]
+        y_bits = groups[&#34;y&#34;]
+
+        x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
+        y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+
+        if len(x) != len(y):
+            return
+
+        if op == &#34;&amp;&#34;:
+            return operator.and_(x, y)
+        if op == &#34;|&#34;:
+            return operator.or_(x, y)
+        if op == &#34;-&gt;&#34;:
+            return x.implies(y)
+        return x.equals(y)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -719,6 +920,93 @@ class BitArray:
 </dl>
 <h3>Static methods</h3>
 <dl>
+<dt id="bitarray.core.BitArray.execute"><code class="name flex">
+<span>def <span class="ident">execute</span></span>(<span>expr: str) ‑> Optional[<a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate the result of the expression</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>expr</code></strong> :&ensp;<code>str</code></dt>
+<dd>
+<p>An expression with two operands of the form: arg1 op arg2</p>
+<p>Op: '&amp;' for bitwise and, '|' - or, '-&gt;'
+- implication, '=' - equivalence</p>
+<p>Use '~' to invert the operand</p>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>BitArray | None</code></dt>
+<dd>result of expression or None, if something went wrong</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; BitArray.execute(&quot;~10101 -&gt; 10111&quot;)
+BitArray &lt;11001&gt; object
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def execute(expr: str) -&gt; Optional[BitArray]:
+    &#34;&#34;&#34;
+    Calculate the result of the expression
+
+    Parameters
+    ----------
+    expr : str
+        An expression with two operands of the form: arg1 op arg2
+
+        Op: &#39;&amp;&#39; for bitwise and, &#39;|&#39; - or, &#39;-&gt;&#39;  - implication, &#39;=&#39; - equivalence
+
+        Use &#39;~&#39; to invert the operand
+
+    Returns
+    -------
+    BitArray | None
+        result of expression or None, if something went wrong
+
+    Examples
+    --------
+    &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
+    BitArray &lt;11001&gt; object
+    &#34;&#34;&#34;
+    if not isinstance(expr, str):
+        return
+    # Check empty string
+    if not expr:
+        return
+
+    expr = expr.replace(&#34; &#34;, &#34;&#34;)
+
+    pattern = re.compile(&#34;(?P&lt;x&gt; ~?[01]*) (?P&lt;op&gt; [&amp;=|]|-&gt;) (?P&lt;y&gt; ~?[01]*)&#34;, re.VERBOSE)
+    matcher = pattern.fullmatch(expr)
+
+    if not matcher:
+        return
+
+    groups = matcher.groupdict()
+
+    x_bits = groups[&#34;x&#34;]
+    op = groups[&#34;op&#34;]
+    y_bits = groups[&#34;y&#34;]
+
+    x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
+    y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+
+    if len(x) != len(y):
+        return
+
+    if op == &#34;&amp;&#34;:
+        return operator.and_(x, y)
+    if op == &#34;|&#34;:
+        return operator.or_(x, y)
+    if op == &#34;-&gt;&#34;:
+        return x.implies(y)
+    return x.equals(y)</code></pre>
+</details>
+</dd>
 <dt id="bitarray.core.BitArray.parse_list"><code class="name flex">
 <span>def <span class="ident">parse_list</span></span>(<span>lst: list) ‑> List[bool]</span>
 </code></dt>
@@ -933,6 +1221,8 @@ def bits(self) -&gt; List[bool]:
 <dl>
 <dt><code>TypeError</code></dt>
 <dd>when an invalid data type is transmitted</dd>
+<dt><code>ValueError</code></dt>
+<dd>when an object of mismatched length is transmitted</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <pre><code class="language-python-repl">&gt;&gt;&gt; x = BitArray(&quot;1011&quot;)
@@ -962,6 +1252,9 @@ BitArray &lt;1000&gt; object
     ------
     TypeError
         when an invalid data type is transmitted
+
+    ValueError
+        when an object of mismatched length is transmitted
 
     Examples
     --------
@@ -1097,6 +1390,8 @@ False
 <dl>
 <dt><code>TypeError</code></dt>
 <dd>when an invalid data type is transmitted</dd>
+<dt><code>ValueError</code></dt>
+<dd>when an object of mismatched length is transmitted</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <pre><code class="language-python-repl">&gt;&gt;&gt; x = BitArray(&quot;1011&quot;)
@@ -1126,6 +1421,9 @@ BitArray &lt;1111&gt; object
     ------
     TypeError
         when an invalid data type is transmitted
+
+    ValueError
+        when an object of mismatched length is transmitted
 
     Examples
     --------
@@ -1243,6 +1541,71 @@ BitArray &lt;11011100&gt; object
     self.__bits += self.try_parse(new_bits)</code></pre>
 </details>
 </dd>
+<dt id="bitarray.core.BitArray.equals"><code class="name flex">
+<span>def <span class="ident">equals</span></span>(<span>self, other: <a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a>) ‑> <a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implements a bitwise equivalence</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a></code></dt>
+<dd>another array of bytes</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a></code></dt>
+<dd>new BitArray object, result of "equivalence (x = y)"</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd>when an invalid data type is transmitted</dd>
+<dt><code>ValueError</code></dt>
+<dd>when an object of mismatched length is transmitted</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; x = BitArray(&quot;1011&quot;)
+&gt;&gt;&gt; y = BitArray(&quot;1100&quot;)
+&gt;&gt;&gt; x.equals(y)
+BitArray &lt;1000&gt; object
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def equals(self, other: BitArray) -&gt; BitArray:
+    &#34;&#34;&#34;
+    Implements a bitwise equivalence
+
+    Parameters
+    ----------
+    other : BitArray
+        another array of bytes
+
+    Returns
+    -------
+    BitArray
+        new BitArray object, result of &#34;equivalence (x = y)&#34;
+
+    Raises
+    ------
+    TypeError
+        when an invalid data type is transmitted
+
+    ValueError
+        when an object of mismatched length is transmitted
+
+    Examples
+    --------
+    &gt;&gt;&gt; x = BitArray(&#34;1011&#34;)
+    &gt;&gt;&gt; y = BitArray(&#34;1100&#34;)
+    &gt;&gt;&gt; x.equals(y)
+    BitArray &lt;1000&gt; object
+    &#34;&#34;&#34;
+    self._check_support(other, &#34;bitwise equivalence&#34;)
+    return BitArray([x is y for x, y in zip(self.bits, other.bits)])</code></pre>
+</details>
+</dd>
 <dt id="bitarray.core.BitArray.implies"><code class="name flex">
 <span>def <span class="ident">implies</span></span>(<span>self, other: <a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a>) ‑> <a title="bitarray.core.BitArray" href="#bitarray.core.BitArray">BitArray</a></span>
 </code></dt>
@@ -1262,6 +1625,8 @@ BitArray &lt;11011100&gt; object
 <dl>
 <dt><code>TypeError</code></dt>
 <dd>when an invalid data type is transmitted</dd>
+<dt><code>ValueError</code></dt>
+<dd>when an object of mismatched length is transmitted</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <pre><code class="language-python-repl">&gt;&gt;&gt; x = BitArray(&quot;1011&quot;)
@@ -1291,6 +1656,9 @@ BitArray &lt;1100&gt; object
     ------
     TypeError
         when an invalid data type is transmitted
+
+    ValueError
+        when an object of mismatched length is transmitted
 
     Examples
     --------
@@ -1333,6 +1701,8 @@ BitArray &lt;1100&gt; object
 <li><code><a title="bitarray.core.BitArray._check_support" href="#bitarray.core.BitArray._check_support">_check_support</a></code></li>
 <li><code><a title="bitarray.core.BitArray.append" href="#bitarray.core.BitArray.append">append</a></code></li>
 <li><code><a title="bitarray.core.BitArray.bits" href="#bitarray.core.BitArray.bits">bits</a></code></li>
+<li><code><a title="bitarray.core.BitArray.equals" href="#bitarray.core.BitArray.equals">equals</a></code></li>
+<li><code><a title="bitarray.core.BitArray.execute" href="#bitarray.core.BitArray.execute">execute</a></code></li>
 <li><code><a title="bitarray.core.BitArray.implies" href="#bitarray.core.BitArray.implies">implies</a></code></li>
 <li><code><a title="bitarray.core.BitArray.parse_list" href="#bitarray.core.BitArray.parse_list">parse_list</a></code></li>
 <li><code><a title="bitarray.core.BitArray.parse_str" href="#bitarray.core.BitArray.parse_str">parse_str</a></code></li>

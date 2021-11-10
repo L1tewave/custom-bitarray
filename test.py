@@ -97,13 +97,79 @@ class TestBitArray:
         with pytest.raises(ValueError):
             y = x.implies(BitArray())
 
+    def test_equivalence(self):
+        x = BitArray("10101")
+        y = BitArray("01100")
+        z = BitArray("00110")
+
+        assert x.equals(y) == z
+
+    def test_equivalence_exception(self, x):
+        with pytest.raises(TypeError):
+            y = x.equals("something else")
+        with pytest.raises(ValueError):
+            y = x.equals(BitArray())
+
     def test_representation(self, x):
         x = BitArray([True] * 10)
         assert repr(x) == f"BitArray <{str(1) * 10}> object"
 
-    def test_evaluate(self):
-        print(BitArray.execute("!10101 > 10111"))
-        assert 1 == 1
+    # Equivalence classes.
+    # Separation on the basis of "there is an inversion sign - there is no inversion sign".
+    # The types of operations are also tested.
+    def test_execute_neutral_neutral(self):
+        x = BitArray.execute("100101 & 111001")
+        assert x == BitArray("100001")
+
+    def test_execute_neutral_inverse(self):
+        x = BitArray.execute("100101 & ~111001")
+        assert x == BitArray("000100")
+
+    def test_execute_inverse_neutral(self):
+        x = BitArray.execute("~100101 & 111001")
+        assert x == BitArray("011000")
+
+    def test_execute_inverse_inverse(self):
+        x = BitArray.execute("~100101 & ~111001")
+        assert x == BitArray("000010")
+
+    def test_execute_bitwise_or(self):
+        x = BitArray.execute("100101 | ~111001")
+        assert x == BitArray("100111")
+
+    def test_execute_bitwise_implication(self):
+        x = BitArray.execute("~100101 -> 111001")
+        assert x == BitArray("111101")
+
+    def test_execute_bitwise_equivalence(self):
+        x = BitArray.execute("~100101 = ~111001")
+        assert x == BitArray("100011")
+
+    def test_execute_unsupported_operation(self):
+        assert BitArray.execute("10 ) 10") is None
+
+    def test_execute_whitespaces(self):
+        x = BitArray.execute(" 1011   |   1101   ")
+        assert x == BitArray("1111")
+
+    def test_bad_format_one_argument(self):
+        assert BitArray.execute("101011") is None
+
+    def test_bad_format_one_argument_and_operation(self):
+        assert BitArray.execute("101011 >") is None
+
+    def test_bad_format_three_arguments(self):
+        assert BitArray.execute("1 & 1 & 0") is None
+
+    def test_bad_format_empty_string(self):
+        assert BitArray.execute("") is None
+
+    def test_execute_none(self):
+        assert BitArray.execute(None) is None
+
+    def test_gibberish(self):
+        assert BitArray.execute("dsaw0re1_~!0`-012`32213_*@#&&*~as' wsad") is None
+
 
 def test_single_character_exception():
     with pytest.raises(ValueError):
