@@ -1,5 +1,6 @@
 .coverage
-launch guide.txt
+*.txt
+!requirements.txt
 venv/
 .idea/
 __pycache__

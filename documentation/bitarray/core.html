@@ -433,6 +433,9 @@ class BitArray:
         &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
         BitArray &lt;11001&gt; object
         &#34;&#34;&#34;
+        def to_bitarray(bits: str) -&gt; BitArray:
+            return BitArray(bits) if not bits.startswith(&#34;~&#34;) else ~BitArray(bits[1:])
+
         if not isinstance(expr, str):
             return
         # Check empty string
@@ -453,8 +456,8 @@ class BitArray:
         op = groups[&#34;op&#34;]
         y_bits = groups[&#34;y&#34;]
 
-        x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
-        y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+        x = to_bitarray(x_bits)
+        y = to_bitarray(y_bits)
 
         if len(x) != len(y):
             return
@@ -877,6 +880,9 @@ class BitArray:
         &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
         BitArray &lt;11001&gt; object
         &#34;&#34;&#34;
+        def to_bitarray(bits: str) -&gt; BitArray:
+            return BitArray(bits) if not bits.startswith(&#34;~&#34;) else ~BitArray(bits[1:])
+
         if not isinstance(expr, str):
             return
         # Check empty string
@@ -897,8 +903,8 @@ class BitArray:
         op = groups[&#34;op&#34;]
         y_bits = groups[&#34;y&#34;]
 
-        x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
-        y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+        x = to_bitarray(x_bits)
+        y = to_bitarray(y_bits)
 
         if len(x) != len(y):
             return
@@ -972,6 +978,9 @@ def execute(expr: str) -&gt; Optional[BitArray]:
     &gt;&gt;&gt; BitArray.execute(&#34;~10101 -&gt; 10111&#34;)
     BitArray &lt;11001&gt; object
     &#34;&#34;&#34;
+    def to_bitarray(bits: str) -&gt; BitArray:
+        return BitArray(bits) if not bits.startswith(&#34;~&#34;) else ~BitArray(bits[1:])
+
     if not isinstance(expr, str):
         return
     # Check empty string
@@ -992,8 +1001,8 @@ def execute(expr: str) -&gt; Optional[BitArray]:
     op = groups[&#34;op&#34;]
     y_bits = groups[&#34;y&#34;]
 
-    x = BitArray(x_bits) if not x_bits.startswith(&#34;~&#34;) else ~BitArray(x_bits[1:])
-    y = BitArray(y_bits) if not y_bits.startswith(&#34;~&#34;) else ~BitArray(y_bits[1:])
+    x = to_bitarray(x_bits)
+    y = to_bitarray(y_bits)
 
     if len(x) != len(y):
         return

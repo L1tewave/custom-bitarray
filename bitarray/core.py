@@ -404,6 +404,9 @@ class BitArray:
         >>> BitArray.execute("~10101 -> 10111")
         BitArray <11001> object
         """
+        def to_bitarray(bits: str) -> BitArray:
+            return BitArray(bits) if not bits.startswith("~") else ~BitArray(bits[1:])
+
         if not isinstance(expr, str):
             return
         # Check empty string
@@ -424,8 +427,8 @@ class BitArray:
         op = groups["op"]
         y_bits = groups["y"]
 
-        x = BitArray(x_bits) if not x_bits.startswith("~") else ~BitArray(x_bits[1:])
-        y = BitArray(y_bits) if not y_bits.startswith("~") else ~BitArray(y_bits[1:])
+        x = to_bitarray(x_bits)
+        y = to_bitarray(y_bits)
 
         if len(x) != len(y):
             return

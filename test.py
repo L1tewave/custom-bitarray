@@ -3,6 +3,7 @@ import pytest
 from bitarray.core import BitArray
 from bitarray.services import is_char_0_or_1
 
+
 @pytest.fixture
 def x():
     return BitArray("1011")
@@ -155,22 +156,22 @@ class TestBitArray:
         x = BitArray.execute(" 1011   |   1101   ")
         assert x == BitArray("1111")
 
-    def test_bad_format_one_argument(self):
+    def test_execute_bad_format_one_argument(self):
         assert BitArray.execute("101011") is None
 
-    def test_bad_format_one_argument_and_operation(self):
+    def test_execute_bad_format_one_argument_and_operation(self):
         assert BitArray.execute("101011 >") is None
 
-    def test_bad_format_three_arguments(self):
+    def test_execute_bad_format_three_arguments(self):
         assert BitArray.execute("1 & 1 & 0") is None
 
-    def test_bad_format_empty_string(self):
+    def test_execute_bad_format_empty_string(self):
         assert BitArray.execute("") is None
 
     def test_execute_none(self):
         assert BitArray.execute(None) is None
 
-    def test_gibberish(self):
+    def test_execute_gibberish(self):
         assert BitArray.execute("dsaw0re1_~!0`-012`32213_*@#&&*~as' wsad") is None
 
 
